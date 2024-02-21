@@ -9,3 +9,8 @@ GET {{TodoApi_HostAddress}}/api/TodoItems
 Accept: application/json
 
 ###
+
+GET {{TodoApi_HostAddress}}/api/TodoItems/2
+Accept: application/json
+
+###

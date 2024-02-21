@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Data;
+using TodoApi.DTOs;
 
 namespace TodoApi.Controllers
 {
@@ -19,6 +20,67 @@ namespace TodoApi.Controllers
         public IEnumerable<TodoItem> GetItems()
         {
             return _todoContext.TodoItems.OrderBy(x => x.Done).ToList();
+        }
+
+        [HttpGet("{id:int}")]
+        public ActionResult<TodoItem> GetItem(int id)
+        {
+            var todo = _todoContext.TodoItems.Find(id);
+
+            if (todo == null)
+                return NotFound();
+
+            return todo;
+        }
+
+        [HttpPost]
+        public ActionResult<TodoItem> PostItem(PostTodoItemDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var newTodoItem = new TodoItem()
+                {
+                    Title = dto.Title,
+                    Done = dto.Done
+                };
+                _todoContext.Add(newTodoItem);
+                _todoContext.SaveChanges();
+                return CreatedAtAction(nameof(GetItem), new { id = newTodoItem.Id }, newTodoItem);
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        [HttpPut("{id:int}")]
+        public IActionResult PutItem(int id, TodoItem item)
+        {
+            if (id != item.Id)
+                return BadRequest();
+
+            if (!_todoContext.TodoItems.Any(x => x.Id == id))
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                _todoContext.Update(item);
+                _todoContext.SaveChanges();
+                return NoContent();
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        [HttpDelete("{id:int}")]
+        public IActionResult DeleteItem(int id)
+        {
+            var item = _todoContext.TodoItems.Find(id);
+
+            if (item == null)
+                return NotFound();
+
+            _todoContext.Remove(item);
+            _todoContext.SaveChanges();
+            return NoContent();
         }
     }
 }
